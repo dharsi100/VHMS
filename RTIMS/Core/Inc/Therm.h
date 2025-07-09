@@ -56,7 +56,7 @@ void ADCModuleInittemp() //PA6 ADC IN
 	ADC1->CR2 |= (1<<30); //Start conversion of ADC1
 	while (!(ADC1->SR & (1 << 1))); //Wait till EOC
 	uint32_t result = ADC1->DR; //Result of Conversion is stored on result
-
+// 0- 4092
 	float Temp = 125- (result / 22.7 )-61.4;
 	char str[20];
 	if(Temp>23)
