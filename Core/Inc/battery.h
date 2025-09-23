@@ -35,6 +35,7 @@ void ADC3_Init_Battery()
         
         lprint(0xC6,str );
 
+    
         for(int i=0;i<80000;i++); // Delay
 
 }
