@@ -1,5 +1,0 @@
-../Core/Src/LCD.c:3:6:DelayLcd	16	static
-../Core/Src/LCD.c:8:6:LcdInit	8	static
-../Core/Src/LCD.c:24:6:LcdFxn	16	static
-../Core/Src/LCD.c:72:6:lprint	24	static
-../Core/Src/LCD.c:84:6:aprint	24	static
