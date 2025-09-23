@@ -37,8 +37,9 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  C:/Users/WNU3KOR/Desktop/RTOS_Workspace/RTIMS/Thirdparty/FreeRTOS/include/list.h \
  ../Core/Inc/lcd.h \
  ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f405xx.h \
- ../Core/Inc/cmn.h ../Core/Inc/Uson.h ../Core/Inc/Vib.h \
- ../Core/Inc/Therm.h
+ ../Core/Inc/cmn.h ../Core/Inc/RFID.h ../Core/Inc/Thermistor.h \
+ ../Core/Inc/usart.h ../Core/Inc/Waterlevel.h ../Core/Inc/battery.h \
+ ../Core/Inc/mpu.h
 ../Core/Inc/main.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:
 ../Core/Inc/stm32f4xx_hal_conf.h:
@@ -79,6 +80,9 @@ C:/Users/WNU3KOR/Desktop/RTOS_Workspace/RTIMS/Thirdparty/FreeRTOS/include/list.h
 ../Core/Inc/lcd.h:
 ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f405xx.h:
 ../Core/Inc/cmn.h:
-../Core/Inc/Uson.h:
-../Core/Inc/Vib.h:
-../Core/Inc/Therm.h:
+../Core/Inc/RFID.h:
+../Core/Inc/Thermistor.h:
+../Core/Inc/usart.h:
+../Core/Inc/Waterlevel.h:
+../Core/Inc/battery.h:
+../Core/Inc/mpu.h:
