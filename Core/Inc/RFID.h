@@ -1,3 +1,9 @@
+#ifndef __RFID_H
+#define __RFID_H
+
+#include "stm32f4xx.h"
+#include "cmsis_os.h"
+
 void SPI1_Init(void) {
     RCC->APB2ENR |= RCC_APB2ENR_SPI1EN;
     RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;
@@ -168,3 +174,28 @@ uint8_t MFRC522_Anticoll(uint8_t *serNum)
     }
     return 1; // error
 }
+
+uint8_t g_rfidUID[5];
+
+// ===== RTOS Task =====
+void vTaskRFID(void *pvParameters) {
+    (void) pvParameters;
+    uint8_t status;
+    uint8_t uid[5];
+
+    MFRC522_Init();
+
+    for (;;) {
+        status = MFRC522_Request(PICC_REQIDL, uid);
+        if (status == 0) {
+            status = MFRC522_Anticoll(uid);
+            if (status == 0) {
+                for (int i=0; i<5; i++) g_rfidUID[i] = uid[i];
+                // TODO: Send UID to queue or UART
+            }
+        }
+        vTaskDelay(pdMS_TO_TICKS(500)); // check every 500ms
+    }
+}
+
+#endif
