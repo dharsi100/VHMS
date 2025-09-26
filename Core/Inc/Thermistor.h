@@ -1,4 +1,10 @@
+#ifndef __THERMISTOR_H
+#define __THERMISTOR_H
+
+#include "stm32f4xx.h"
+#include "cmsis_os.h"
 #include "usart.h"
+
 void GPIO_Init_Power(void)
 {
 	RCC->AHB1ENR |= 1<<0; // Enable clock to GPIOA
@@ -46,6 +52,25 @@ void ADC1_Init_Thermistor()
         for(int i=0;i<80000;i++); // Delay
 
 }
+
+float Thermistor_ReadTemperature(void) {
+    // Replace with your ADC read + conversion
+    return 25.0f; 
+}
+
+// ===== RTOS Task =====
+float g_temperature = 0.0f;
+
+void vTaskThermistor(void *pvParameters) {
+    (void) pvParameters;
+    for (;;) {
+        g_temperature = Thermistor_ReadTemperature();
+        // TODO: send g_temperature to queue or UART
+        vTaskDelay(pdMS_TO_TICKS(1000)); // 1s delay
+    }
+}
+
+#endif
 
 
 
