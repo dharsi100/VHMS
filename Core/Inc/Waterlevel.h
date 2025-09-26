@@ -1,11 +1,16 @@
+#ifndef __WATERLEVEL_H
+#define __WATERLEVEL_H
 
-// ===== ADC2: Water Level (PC0, Channel 10) =====
-void ADC2_Init_WaterLevel()
-{
-    char str[20];
-    float level;
-    uint32_t result;
+#include "stm32f4xx.h"
+#include "cmsis_os.h"
+#include <stdio.h>
 
+// ===== Globals =====
+uint16_t g_waterLevelRaw = 0;
+float    g_waterLevelNorm = 0.0f;
+
+// ===== ADC2 Init: Water Level (PC0, Channel 10) =====
+void ADC2_Init_WaterLevel(void) {
     // Enable Clocks
     RCC->AHB1ENR |= (1<<2);    // GPIOC
     RCC->APB2ENR |= (1<<9);    // ADC2
@@ -23,16 +28,35 @@ void ADC2_Init_WaterLevel()
     ADC2->SQR3 |= 10;          // Channel 10
 
     ADC2->CR2 |= (1<<30);      // Start conversion
-
-
-        while (!(ADC2->SR & (1<<1))); // Wait EOC
-        result = ADC2->DR;
-
-        level = (float)result / 4095.0f; // Normalize 0–1
-        sprintf(str, "L: %.2f  ", level);
-        
-        aprint(0xC0, result);
-
-        for(int i=0;i<80000;i++); // Delay
-
 }
+
+// ===== Read water level =====
+float WaterLevel_Read(void) {
+    uint32_t result;
+
+    while (!(ADC2->SR & (1<<1))); // Wait EOC
+    result = ADC2->DR;
+
+    g_waterLevelRaw = (uint16_t)result;
+    g_waterLevelNorm = (float)result / 4095.0f; // 0–1 normalized
+
+    return g_waterLevelNorm;
+}
+
+// ===== RTOS Task =====
+void vTaskWaterlevel(void *pvParameters) {
+    (void) pvParameters;
+
+    ADC2_Init_WaterLevel();  // init once
+
+    for (;;) {
+        float level = WaterLevel_Read();
+
+        // Example: print normalized value
+        // aprint(0xC0, (uint16_t)(level*100)); 
+
+        vTaskDelay(pdMS_TO_TICKS(1000)); // 1s update
+    }
+}
+
+#endif
