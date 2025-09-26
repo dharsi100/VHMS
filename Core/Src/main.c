@@ -4,57 +4,55 @@
 #include "stm32f4xx.h"
 #include "lcd.h"
 #include "cmn.h"
-#include "RFID.h"
-#include "Thermistor.h"
-#include "Waterlevel.h"
+#include "rfid.h"
+#include "thermistor.h"
+#include "waterlevel.h"
 #include "battery.h"
-#include <math.h>
 #include "mpu.h"
 
-int main(void) {
+// === Task to handle LCD + RFID scan messages ===
+void vTaskUI(void *pvParameters) {
+    (void) pvParameters;
+    char buf[32];
 
-    SPI1_Init();
-    USART3_Init();
-    LcdInit();
-    MFRC522_Init();
-    MFRC522_AntennaOn();
-    uint8_t val = MFRC522_ReadReg(TxControlReg);
-    uint8_t status;
-    uint8_t tagType[2];
-    uint8_t uid[5];
-    char uidStr[20];
+    for (;;) {
+        lprint(0x80, "Scanning RFID...");
+        if (g_rfidUID[0] != 0) {
+            lprint(0xC0, "Card Found      ");
+            sprintf(buf, "UID:%02X%02X%02X%02X",
+                    g_rfidUID[0], g_rfidUID[1], g_rfidUID[2], g_rfidUID[3]);
+            lprint(0x94, buf);
+        } else {
+            lprint(0xC0, "No Card         ");
+        }
 
-    while (1)
-    {
-    	        lprint(0x80, "Scanning RFID...");
-    	        uint8_t tagType[2];
-    	        uint8_t status = MFRC522_Request(PICC_REQIDL, tagType);
-    	        if (status == 0)
-    	        {
-    	            lprint(0xC0, "Card Found      ");
-    	        }
-    	        else
-    	        {
-    	            lprint(0xC0, "No Card      ");
-    	            for (volatile uint32_t d = 0; d < 2000000; d++); // small delay
-    	            lprint(0xC0, "Card Found   ");
-    	            for (volatile uint32_t d = 0; d < 200000; d++); // small delay
-    	            lprint(0xC0, "ID Matched      ");
-    	            for (volatile uint32_t d = 0; d < 200000; d++); // small delay
-    	            lprint(0x80, "Starting VHMS...");
-    	            lprint(0x80, "............");
-    	            for (volatile uint32_t d = 0; d < 200000; d++); // small delay
-    	            while(1)
-    	            {
-    	            	ADC1_Init_Thermistor();
-    	            	ADC2_Init_WaterLevel();
-    	            	ADC3_Init_Battery();
-    	            	Tilt();
+        // Show other sensor readings
+        sprintf(buf, "T:%.1fC V:%.2fV", g_temperature, g_batteryVoltage);
+        lprint(0xD4, buf);
 
-
-    	            }
-                 }
-     }
+        vTaskDelay(pdMS_TO_TICKS(1000));
+    }
 }
 
+int main(void) {
+    // Basic hardware init
+    SystemInit();
+    USART3_Init();
+    LcdInit();
+    SPI1_Init();
 
+    // Create tasks
+    xTaskCreate(vTaskRFID,       "RFID",       256, NULL, 2, NULL);
+    xTaskCreate(vTaskThermistor, "Thermistor", 256, NULL, 2, NULL);
+    xTaskCreate(vTaskBattery,    "Battery",    256, NULL, 2, NULL);
+    xTaskCreate(vTaskWaterLevel, "WaterLevel", 256, NULL, 2, NULL);
+    xTaskCreate(vTaskMPU,        "MPU",        256, NULL, 2, NULL);
+    xTaskCreate(vTaskUI,         "UI",         256, NULL, 1, NULL);
+
+    // Start scheduler
+    vTaskStartScheduler();
+
+    while (1) {
+        // should never reach here
+    }
+}
